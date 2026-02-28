@@ -78,6 +78,7 @@ public:
   void noAutoscroll(); 
   void createChar(uint8_t, uint8_t[]);
   void createChar(uint8_t location, const char *charmap);
+  void enableOledMode(bool enable, bool hardClearOnInit = true); // Enables OLED-specific functions for timing and register resets
   // Example: 	const char bell[8] PROGMEM = {B00100,B01110,B01110,B01110,B11111,B00000,B00100,B00000};
   
   void setCursor(uint8_t, uint8_t); 
@@ -117,6 +118,9 @@ private:
   void write4bits(uint8_t);
   void expanderWrite(uint8_t);
   void pulseEnable(uint8_t);
+  void oledHardClear();             // Manually wipes visible ram to remove garbage characters
+  bool _oledMode = false;           // Enables OLED timing values
+  bool _oledHardClearOnInit = true; // OLED full screen write after init
   uint8_t _Addr;
   uint8_t _displayfunction;
   uint8_t _displaycontrol;

@@ -65,7 +65,11 @@ void LiquidCrystal_I2C::init_priv()
 {
 	Wire.begin();
 	_displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-	begin(_cols, _rows);  
+	begin(_cols, _rows);
+	
+	if (_oledMode && _oledHardClearOnInit) { // Manually clears the screen
+    	oledHardClear();
+ 	}
 }
 
 void LiquidCrystal_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
@@ -110,7 +114,14 @@ void LiquidCrystal_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 
 	// set # lines, font size, etc.
 	command(LCD_FUNCTIONSET | _displayfunction);  
-	
+
+	if (_oledMode) {
+	// Force a known display state before clearing
+	_displaycontrol = LCD_DISPLAYOFF | LCD_CURSOROFF | LCD_BLINKOFF;
+	command(LCD_DISPLAYCONTROL | _displaycontrol);
+	delay(5);
+	}
+		
 	// turn the display on with no cursor or blinking default
 	_displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
 	display();
@@ -129,15 +140,39 @@ void LiquidCrystal_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 }
 
 /********** high level commands, for the user! */
+void LiquidCrystal_I2C::enableOledMode(bool enable, bool hardClearOnInit)
+{ 
+  _oledMode = enable;
+  _oledHardClearOnInit = hardClearOnInit;
+}
+
+void LiquidCrystal_I2C::oledHardClear() // Clear the entire screen based on row/column definition
+{ 
+  for (uint8_t r = 0; r < _rows; r++) {
+    setCursor(0, r);
+    for (uint8_t c = 0; c < _cols; c++) {
+      write(' ');
+    }
+  }
+  setCursor(0, 0);
+}
+
 void LiquidCrystal_I2C::clear(){
 	command(LCD_CLEARDISPLAY);// clear display, set cursor position to zero
-	delayMicroseconds(2000);  // this command takes a long time!
-  if (_oled) setCursor(0,0);
+	if (_oledMode) {
+		delay(20);                 // OLED-safe margin
+	} else {
+		delayMicroseconds(2000);   // original behavior
+	}
 }
 
 void LiquidCrystal_I2C::home(){
 	command(LCD_RETURNHOME);  // set cursor position to zero
-	delayMicroseconds(2000);  // this command takes a long time!
+	  if (_oledMode) {
+		delay(20);                 // OLED-safe margin
+	} else {
+		delayMicroseconds(2000);   // original behavior
+	}
 }
 
 void LiquidCrystal_I2C::setCursor(uint8_t col, uint8_t row){
