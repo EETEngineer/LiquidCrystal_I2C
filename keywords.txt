@@ -15,6 +15,7 @@ init	KEYWORD2
 begin	KEYWORD2
 clear	KEYWORD2
 home	KEYWORD2
+enableOledMode KEYWORD2
 noDisplay	KEYWORD2
 display	KEYWORD2
 noBlink	KEYWORD2
